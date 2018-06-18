@@ -7,6 +7,8 @@ var {Todo} = require('./models/todo');
 var {User} = require('./models/user');
 
 var app = express();
+//setting up for Hiroku
+const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
@@ -49,8 +51,8 @@ app.get('/todos/:id', (req, res)=> { //will create an id variable that will be o
 });
 
 
-app.listen(3000, ()=>{
-  console.log('Started on port 3000');
+app.listen(port, ()=>{
+  console.log(`Started on port ${port}`);
 });
 
 module.exports = {app};
