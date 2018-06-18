@@ -47,7 +47,21 @@ app.get('/todos/:id', (req, res)=> { //will create an id variable that will be o
   }).catch((e)=> {
     res.status(400).send();
   });
+});
 
+app.delete('/todos/:id', (req, res) => {
+  var id = req.params.id;
+  if (!ObjectID.isValid(id)){
+    return res.status(404).send();
+  }
+  Todo.findByIdAndRemove(id).then((todo)=>{
+    if(!todo) { 
+      return res.status(404).send();
+    } //this has to be done because the findbyidandremove function will return true even if there was nothing to remove
+    res.send(todo);
+  }).catch((e) =>{
+    res.status(400).send();
+  });
 });
 
 
