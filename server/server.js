@@ -98,6 +98,25 @@ app.patch('/todos/:id', (req, res) => {
   // new: true in order to get the new item returned not the old one
 });
 
+// Post /users
+app.post('/users', (req, res) => {
+  var body = _.pick(req.body, ['email', 'password']);
+  var user = new User(body);
+
+  //Model methods will be used on User
+  //User.findByToken this is not a build in function. We have to make it. 
+  //instants method will be used on user
+  //user.generateAuthToken
+
+  user.save().then(() => {
+    return user.generateAuthToken();
+  }).then((token)=>{
+    res.header('x-auth', token).send(user); //need to send the token as an http response header. header takes two arguments
+  }).catch((e) => {
+    res.status(400).send(e);
+  })
+});
+
 module.exports = {app};
 
 

@@ -1,12 +1,63 @@
-var mongoose = require('mongoose');
+const mongoose = require('mongoose');
+const validator = require('validator');
+const jwt = require('jsonwebtoken');
+const _ = require('lodash');
 
-var User = mongoose.model('User', {
+var UserSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
     trim: true,
-    minlength: 1
-  }
-});
+    minlength: 1,
+    unique: true,
+    validate: {
+      validator: validator.isEmail,
+      message: '{VALUE} is not a valid email'
+    }
+  },
+  password: {
+    type: String,
+    require: true,
+    minlength: 6
+  },
+  tokens: [{
+    access: {
+      type: String,
+      reqeuired: true
+    },
+    token: {
+      type: String,
+      required: true
+    }
+  }]
+}); //let's define a new schema. We do this so that we can generate a model on which we can use methods
+
+//Overriding a JSON method in order not to send back the token and the password. These should never be sent back
+UserSchema.methods.toJSON = function () {
+  var user = this;
+  var userObject = user.toObject();
+   //user.toObject takes the user mongoose variable and converting to a regular object where only the properties available on the document exist
+
+  return _.pick(userObject, ['_id', 'email']);
+ 
+};
+
+
+//our instance methods
+UserSchema.methods.generateAuthToken = function () {
+  var user = this; // cannot use this with arrow functions
+  var access = 'auth';
+  var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123').toString();
+
+  user.tokens = user.tokens.concat([{access, token}]);
+
+  return user.save().then(() => {
+    return token;
+  });
+};
+
+
+
+var User = mongoose.model('User', UserSchema);
 
 module.exports = {User};
