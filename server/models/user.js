@@ -75,6 +75,26 @@ UserSchema.statics.findByToken = function (token) {
   });
 };
 
+UserSchema.statics.findByCredentials = function (email, password) {
+  var User = this;
+
+  return User.findOne({email}).then((user) => {
+    if(!user) {
+      return Promise.reject();
+    }
+    //bcrypt only supports callbacks and they don't support promises so we won't use it.
+    return new Promise((resolve, reject) => {
+      bcrypt.compare(password, user.password, (err, res)=>{
+        if(res){
+          resolve(user);
+        } else {
+          reject();
+        }
+      });
+    });
+  });
+};
+
 // adding a middleware to UserSchema
 // we use pre... 'save', it means before we save to the database
 UserSchema.pre('save', function(next) {
